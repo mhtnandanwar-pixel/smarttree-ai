@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SmartTree AI — My Trees</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<nav>
+  <a class="nav-brand" href="index.html"><span class="leaf-icon">🌿</span> SmartTree AI</a>
+  <a href="index.html">Dashboard</a>
+  <a href="trees.html" class="active">My Trees</a>
+  <a href="add-tree.html">+ Add Tree</a>
+  <a href="reminders.html">Reminders</a>
+  <a href="about.html">About</a>
+</nav>
+
+<div class="page">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+    <div>
+      <div class="page-title">My Trees</div>
+      <div class="page-sub">All trees you are tracking with SmartTree AI</div>
+    </div>
+    <a href="add-tree.html" class="btn btn-primary">🌱 Add Tree</a>
+  </div>
+
+  <!-- Filters -->
+  <div class="card" style="margin-bottom:24px;display:flex;gap:12px;flex-wrap:wrap;align-items:center">
+    <div style="flex:1;min-width:180px">
+      <input type="search" id="search" placeholder="Search by species or location…" style="margin:0">
+    </div>
+    <select id="filter-health" style="width:auto;margin:0">
+      <option value="">All health statuses</option>
+      <option>Healthy</option>
+      <option>Needs Water</option>
+      <option>Unhealthy</option>
+      <option>Unknown</option>
+    </select>
+    <select id="sort-by" style="width:auto;margin:0">
+      <option value="newest">Newest first</option>
+      <option value="oldest">Oldest first</option>
+      <option value="species">Species A–Z</option>
+    </select>
+  </div>
+
+  <!-- Tree count -->
+  <div id="count-label" style="font-size:.85rem;color:var(--muted);margin-bottom:14px"></div>
+
+  <!-- Grid -->
+  <div class="card-grid" id="tree-grid"></div>
+</div>
+
+<footer>
+  Dr. D. Y. Patil College of Engineering and Innovation &nbsp;·&nbsp; Dept. of AI, Data Science &amp; ML &nbsp;·&nbsp; CEP Project 2026
+</footer>
+
+<!-- Delete confirm modal -->
+<div class="modal-backdrop" id="del-modal">
+  <div class="modal">
+    <div class="modal-head">
+      <h3>Delete Tree?</h3>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <p style="margin-bottom:20px;color:var(--muted);font-size:.9rem">This will permanently remove the tree and all its records from your device. This cannot be undone.</p>
+    <div style="display:flex;gap:10px;justify-content:flex-end">
+      <button class="btn btn-outline" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-danger" id="confirm-del">Delete</button>
+    </div>
+  </div>
+</div>
+
+<script src="shared.js"></script>
+<script>
+let pendingDelete = null;
+
+function render() {
+  let trees = ST.getTrees();
+  const q      = document.getElementById('search').value.toLowerCase();
+  const health = document.getElementById('filter-health').value;
+  const sort   = document.getElementById('sort-by').value;
+
+  if (q)      trees = trees.filter(t => t.species.toLowerCase().includes(q) || t.location.toLowerCase().includes(q));
+  if (health) trees = trees.filter(t => t.health === health);
+
+  if (sort === 'newest') trees = [...trees].reverse();
+  else if (sort === 'oldest') { /* default order */ }
+  else if (sort === 'species') trees = [...trees].sort((a,b) => a.species.localeCompare(b.species));
+
+  document.getElementById('count-label').textContent = `${trees.length} tree${trees.length !== 1 ? 's' : ''} found`;
+
+  const grid = document.getElementById('tree-grid');
+  if (trees.length === 0) {
+    grid.innerHTML = `<div class="empty" style="grid-column:1/-1">
+      <div class="icon">🌾</div>
+      <p>No trees match your filters. Try changing the search or add a new tree.</p>
+      <a href="add-tree.html" class="btn btn-primary">Add a Tree</a>
+    </div>`;
+    return;
+  }
+
+  grid.innerHTML = trees.map(t => `
+    <div class="tree-card">
+      <div class="tree-card-top">
+        <div>
+          <div class="tree-card-name">🌳 ${t.species}</div>
+          <div class="tree-card-loc">📍 ${t.location}</div>
+        </div>
+        ${ST.healthBadge(t.health)}
+      </div>
+      <div class="tree-card-meta">
+        <span>Planted</span><strong>${ST.formatDate(t.plantedDate)}</strong>
+        <span>Soil</span><strong>${t.soilType}</strong>
+        <span>Growth</span><strong>${t.growth || 0} cm</strong>
+        <span>Water every</span><strong>${t.waterEvery} days</strong>
+      </div>
+      ${t.notes ? `<div style="font-size:.8rem;color:var(--muted);padding-top:4px;border-top:1px solid var(--border)">${t.notes}</div>` : ''}
+      <div class="tree-card-actions">
+        <a href="tree-detail.html?id=${t.id}" class="btn btn-outline btn-sm">Details</a>
+        <a href="add-tree.html?edit=${t.id}" class="btn btn-outline btn-sm">Edit</a>
+        <button class="btn btn-sm" style="background:#fdecea;color:var(--danger);border:none" onclick="confirmDelete('${t.id}')">Delete</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function confirmDelete(id) {
+  pendingDelete = id;
+  document.getElementById('del-modal').classList.add('open');
+}
+function closeModal() {
+  document.getElementById('del-modal').classList.remove('open');
+  pendingDelete = null;
+}
+document.getElementById('confirm-del').onclick = () => {
+  if (pendingDelete) { ST.deleteTree(pendingDelete); closeModal(); render(); }
+};
+
+['search','filter-health','sort-by'].forEach(id =>
+  document.getElementById(id).addEventListener('input', render)
+);
+
+render();
+</script>
+</body>
+</html>

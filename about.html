@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SmartTree AI — About the Project</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .about-hero {
+      background: linear-gradient(135deg, var(--forest) 0%, var(--leaf) 100%);
+      border-radius: 16px; padding: 48px 40px; color: #fff;
+      margin-bottom: 40px; text-align: center;
+    }
+    .about-hero h1 { font-size: 2.2rem; font-weight: 800; margin-bottom: 10px; }
+    .about-hero p  { opacity: .88; max-width: 560px; margin: 0 auto; font-size: 1.02rem; }
+
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+    @media (max-width: 640px) { .two-col { grid-template-columns: 1fr; } }
+
+    .info-block { padding: 20px 22px; }
+    .info-block h3 { font-size: 1rem; font-weight: 700; color: var(--forest); margin-bottom: 10px; }
+    .info-block ul { padding-left: 18px; color: var(--muted); font-size: .875rem; line-height: 1.8; }
+    .info-block ul li strong { color: var(--ink); }
+
+    .workflow-steps { display: flex; flex-direction: column; gap: 0; }
+    .w-step {
+      display: flex; gap: 16px; align-items: flex-start;
+      padding: 14px 0; border-bottom: 1px solid var(--border);
+    }
+    .w-step:last-child { border-bottom: none; }
+    .w-num {
+      width: 32px; height: 32px; border-radius: 50%;
+      background: var(--forest); color: #fff;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 800; font-size: .85rem; flex-shrink: 0;
+    }
+    .w-label { font-weight: 600; color: var(--ink); font-size: .9rem; }
+    .w-desc  { font-size: .8rem; color: var(--muted); margin-top: 2px; }
+
+    .team-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 14px; }
+    .team-card {
+      background: var(--mist); border: 1px solid var(--border);
+      border-radius: 10px; padding: 18px 16px; text-align: center;
+    }
+    .team-card .avatar { font-size: 2.2rem; margin-bottom: 8px; }
+    .team-card .name { font-weight: 700; font-size: .9rem; color: var(--forest); }
+    .team-card .roll { font-size: .78rem; color: var(--muted); margin-top: 3px; }
+
+    .impact-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 20px; }
+    @media (max-width: 560px) { .impact-row { grid-template-columns: 1fr; } }
+    .impact-box {
+      background: var(--forest); color: #fff;
+      border-radius: 10px; padding: 20px 16px; text-align: center;
+    }
+    .impact-box .big { font-size: 1.6rem; font-weight: 800; line-height: 1.1; margin-bottom: 6px; }
+    .impact-box .desc { font-size: .78rem; opacity: .82; }
+
+    .quote-block {
+      background: var(--mist); border-left: 4px solid var(--sprout);
+      border-radius: 0 10px 10px 0; padding: 18px 22px;
+      font-family: 'Lora', serif; font-style: italic; font-size: 1rem;
+      color: var(--forest); margin: 20px 0;
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-brand" href="index.html"><span class="leaf-icon">🌿</span> SmartTree AI</a>
+  <a href="index.html">Dashboard</a>
+  <a href="trees.html">My Trees</a>
+  <a href="add-tree.html">+ Add Tree</a>
+  <a href="reminders.html">Reminders</a>
+  <a href="about.html" class="active">About</a>
+</nav>
+
+<div class="page">
+
+  <div class="about-hero">
+    <h1>🌿 SmartTree AI</h1>
+    <p>An AI-based system that helps users make smarter decisions for tree plantation and long-term care — because we don't just count trees planted, we track trees that survive and grow.</p>
+  </div>
+
+  <!-- Institute -->
+  <div class="card" style="margin-bottom:20px;text-align:center;padding:24px">
+    <div style="font-size:.85rem;font-style:italic;color:var(--muted)">Dr. D. Y. Patil Education Federation</div>
+    <div style="font-size:1.1rem;font-weight:800;color:var(--forest);margin:4px 0">Dr. D. Y. Patil College of Engineering and Innovation</div>
+    <div style="font-size:.82rem;color:var(--muted)">Approved by AICTE · Recognised by Govt. of Maharashtra · Affiliated to Savitribai Phule Pune University · NAAC "A" Grade</div>
+    <div style="margin-top:8px;font-weight:600;color:var(--leaf)">Department of Artificial Intelligence &amp; Machine Learning</div>
+    <div style="font-size:.82rem;color:var(--muted);margin-top:2px">Program: Machine Learning / Data Science &nbsp;|&nbsp; CEP Project 2026</div>
+  </div>
+
+  <!-- Problem -->
+  <div class="section-head"><h2>Problem &amp; Community Need</h2></div>
+  <div class="two-col" style="margin-bottom:20px">
+    <div class="card info-block">
+      <h3>🌱 Problem Identified</h3>
+      <ul>
+        <li>Trees are planted without checking if the location and soil are suitable</li>
+        <li>Planted trees are often not properly monitored or watered</li>
+        <li>Some trees die after planting due to lack of maintenance</li>
+      </ul>
+    </div>
+    <div class="card info-block">
+      <h3>👥 Who Faces This Problem?</h3>
+      <ul>
+        <li>Students and colleges</li>
+        <li>Local communities</li>
+        <li>Municipal authorities</li>
+        <li>NGOs and environmental groups</li>
+      </ul>
+    </div>
+    <div class="card info-block">
+      <h3>📍 Where / When Does It Occur?</h3>
+      <ul>
+        <li>Roadsides</li>
+        <li>School and college campuses</li>
+        <li>Empty and open areas</li>
+        <li>Urban areas with less greenery</li>
+        <li>During and after plantation drives</li>
+      </ul>
+    </div>
+    <div class="card info-block">
+      <h3>💡 Why Does It Need a Solution?</h3>
+      <ul>
+        <li>Focus should be on <strong>tree survival</strong>, not just trees planted</li>
+        <li>Proper species selection and regular monitoring can <strong>improve survival</strong></li>
+        <li>More healthy trees means <strong>better air quality, shade and biodiversity</strong></li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="quote-block">
+    "A plantation drive may plant 100 trees, but without proper watering and monitoring, many young trees may not survive."
+  </div>
+
+  <!-- How it works -->
+  <div class="section-head" style="margin-top:32px"><h2>How SmartTree AI Works</h2></div>
+  <div class="two-col" style="margin-bottom:20px">
+    <div class="card" style="padding:20px 22px">
+      <h3 style="font-size:1rem;font-weight:700;color:var(--forest);margin-bottom:14px">📋 Data / Input Required</h3>
+      <ul style="list-style:none;padding:0;font-size:.875rem;display:flex;flex-direction:column;gap:8px;color:var(--muted)">
+        <li>📍 Location</li>
+        <li>🟤 Soil type</li>
+        <li>☁️ Weather information</li>
+        <li>🌿 Tree species</li>
+        <li>📷 Tree photograph</li>
+        <li>📅 Planting date</li>
+      </ul>
+    </div>
+    <div class="card" style="padding:20px 22px">
+      <h3 style="font-size:1rem;font-weight:700;color:var(--forest);margin-bottom:14px">✅ Expected Output</h3>
+      <ul style="list-style:none;padding:0;font-size:.875rem;display:flex;flex-direction:column;gap:8px;color:var(--muted)">
+        <li>🌳 Suitable tree recommendation</li>
+        <li>💧 Watering requirement</li>
+        <li>❤️ Tree health status</li>
+        <li>⚠️ Warning if tree appears unhealthy</li>
+        <li>📊 Tree growth record</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Workflow -->
+  <div class="card" style="margin-bottom:20px;padding:22px 24px">
+    <h3 style="font-size:1rem;font-weight:700;color:var(--forest);margin-bottom:16px">⚙️ Workflow</h3>
+    <div class="workflow-steps">
+      <div class="w-step"><div class="w-num">1</div><div><div class="w-label">User Input</div><div class="w-desc">User enters location, soil type, tree species and photos</div></div></div>
+      <div class="w-step"><div class="w-num">2</div><div><div class="w-label">Location + Soil + Tree Image / Data</div><div class="w-desc">All environmental context is collected for analysis</div></div></div>
+      <div class="w-step"><div class="w-num">3</div><div><div class="w-label">AI Model</div><div class="w-desc">Machine learning model processes the combined inputs</div></div></div>
+      <div class="w-step"><div class="w-num">4</div><div><div class="w-label">Data Processing &amp; Analysis</div><div class="w-desc">Soil suitability, weather correlation, species matching</div></div></div>
+      <div class="w-step"><div class="w-num">5</div><div><div class="w-label">Tree Recommendation + Health Prediction</div><div class="w-desc">Best species selected; health forecast generated</div></div></div>
+      <div class="w-step"><div class="w-num">6</div><div><div class="w-label">Watering / Maintenance Reminder</div><div class="w-desc">Automated schedule sent to user</div></div></div>
+      <div class="w-step"><div class="w-num">7</div><div><div class="w-label">User</div><div class="w-desc">User acts on recommendations and logs progress</div></div></div>
+    </div>
+  </div>
+
+  <!-- Impact -->
+  <div class="section-head" style="margin-top:32px"><h2>Impact &amp; Innovation</h2></div>
+  <div class="impact-row">
+    <div class="impact-box"><div class="big">20–30%</div><div class="desc">Target improvement in plantation monitoring efficiency</div></div>
+    <div class="impact-box" style="background:var(--sky)"><div class="big">↓ Water</div><div class="desc">Reduction in unnecessary watering through need-based scheduling</div></div>
+    <div class="impact-box" style="background:var(--leaf)"><div class="big">↑ Green</div><div class="desc">More trees successfully monitored and surviving long-term</div></div>
+  </div>
+
+  <div class="two-col" style="margin-bottom:20px">
+    <div class="card info-block">
+      <h3>🏆 Who Will Benefit?</h3>
+      <ul><li>Students</li><li>Colleges</li><li>NGOs</li><li>Municipalities</li><li>Local communities</li></ul>
+    </div>
+    <div class="card info-block">
+      <h3>💎 What Makes It Different?</h3>
+      <ul>
+        <li>Combines AI + tree plantation + health monitoring + maintenance reminders in one system</li>
+        <li>Focuses on <strong>tree survival</strong>, not just count</li>
+        <li>Designed for Indian soil types, species and conditions</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- AI Tools -->
+  <div class="card info-block" style="margin-bottom:20px">
+    <h3>🛠️ AI Tools / Technology Used</h3>
+    <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:4px">
+      <span style="background:var(--mist);border:1px solid var(--border);border-radius:20px;padding:4px 14px;font-size:.82rem;font-weight:600;color:var(--forest)">Python</span>
+      <span style="background:var(--mist);border:1px solid var(--border);border-radius:20px;padding:4px 14px;font-size:.82rem;font-weight:600;color:var(--forest)">Machine Learning</span>
+      <span style="background:var(--mist);border:1px solid var(--border);border-radius:20px;padding:4px 14px;font-size:.82rem;font-weight:600;color:var(--forest)">Image Recognition</span>
+      <span style="background:var(--mist);border:1px solid var(--border);border-radius:20px;padding:4px 14px;font-size:.82rem;font-weight:600;color:var(--forest)">Data Analysis</span>
+      <span style="background:var(--mist);border:1px solid var(--border);border-radius:20px;padding:4px 14px;font-size:.82rem;font-weight:600;color:var(--forest)">Mobile / Web Application</span>
+    </div>
+  </div>
+
+  <!-- Future & Startup -->
+  <div class="section-head" style="margin-top:32px"><h2>Future &amp; Startup Potential</h2></div>
+  <div class="two-col" style="margin-bottom:20px">
+    <div class="card info-block">
+      <h3>🚀 Future Improvements</h3>
+      <ul>
+        <li>GPS-based tree mapping 📍</li>
+        <li>Automatic weather integration ☁️</li>
+        <li>AI disease detection from photographs 📷</li>
+        <li>IoT soil-moisture sensors 📡</li>
+        <li>Carbon-absorption estimation 🌿</li>
+        <li>Community leaderboard for trees planted and surviving 🏆</li>
+      </ul>
+    </div>
+    <div class="card info-block">
+      <h3>💼 Possible Business Model</h3>
+      <ul>
+        <li>Subscription model for organisations</li>
+        <li>Campus monitoring packages</li>
+        <li>CSR plantation management services</li>
+      </ul>
+      <h3 style="margin-top:14px">👥 Who Would Pay?</h3>
+      <ul>
+        <li>Schools and colleges</li>
+        <li>NGOs &amp; municipal corporations</li>
+        <li>Companies conducting CSR activities</li>
+        <li>Environmental organisations</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Team -->
+  <div class="section-head" style="margin-top:32px"><h2>Presented By</h2></div>
+  <div class="team-grid" style="margin-bottom:32px">
+    <div class="team-card"><div class="avatar">👨‍💻</div><div class="name">Lagad Sarthak Suhas</div><div class="roll">Team Member 1</div></div>
+    <div class="team-card"><div class="avatar">👨‍💻</div><div class="name">Mohit Gajanan Nandanwar</div><div class="roll">Team Member 2</div></div>
+    <div class="team-card"><div class="avatar">👨‍💻</div><div class="name">Rajesh Dasharath Parab</div><div class="roll">Team Member 3</div></div>
+    <div class="team-card"><div class="avatar">👨‍💻</div><div class="name">Karan Hanumant Katare</div><div class="roll">Team Member 4</div></div>
+  </div>
+
+  <!-- Closing quote -->
+  <div style="text-align:center;padding:40px 20px;background:linear-gradient(135deg,var(--forest),var(--leaf));border-radius:16px;color:#fff">
+    <div style="font-size:1.6rem;font-weight:800;margin-bottom:8px">Plant a tree. Monitor it.<br>Help it survive. Grow a greener future.</div>
+    <div style="opacity:.82;font-style:italic;font-size:.95rem;margin-top:8px">Together, let's use technology to ensure every tree survives and grows for a greener and better tomorrow.</div>
+    <a href="add-tree.html" class="btn" style="margin-top:22px;background:#fff;color:var(--forest);font-weight:700">🌱 Start Tracking a Tree</a>
+  </div>
+
+</div>
+
+<footer>
+  Dr. D. Y. Patil College of Engineering and Innovation &nbsp;·&nbsp; Dept. of AI &amp; ML &nbsp;·&nbsp; CEP Project 2026
+</footer>
+
+<script src="shared.js"></script>
+</body>
+</html>

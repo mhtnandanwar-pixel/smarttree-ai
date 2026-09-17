@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SmartTree AI — Add &amp; Diagnose Tree</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<nav>
+  <a class="nav-brand" href="index.html"><span class="leaf-icon">🌿</span> SmartTree AI</a>
+  <a href="index.html">Dashboard</a>
+  <a href="trees.html">My Trees</a>
+  <a href="add-tree.html" class="active">+ Add Tree</a>
+  <a href="reminders.html">Reminders</a>
+  <a href="pricing.html">Plans &amp; Pro</a>
+  <a href="about.html">About</a>
+</nav>
+
+<div class="page" style="max-width:680px">
+  <div class="page-title" id="page-heading">Add a New Tree</div>
+  <div class="page-sub" id="page-sub">Scan leaves or record planting details for AI-guided care.</div>
+
+  <!-- 3. AI CAMERA ACCESS & DIAGNOSTIC SCANNER -->
+  <div class="card" style="margin-bottom:28px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+      <div style="font-weight:700;color:var(--forest);font-size:1.05rem">📷 AI Tree &amp; Leaf Scanner</div>
+      <span style="font-size:0.75rem;background:#e0f2fe;color:#0369a1;padding:2px 8px;border-radius:12px;font-weight:700">Vision 2.4 ML</span>
+    </div>
+    <p style="font-size:0.85rem;color:var(--muted);margin-bottom:14px">
+      Activate your camera, point at a leaf or bark, and capture to detect moisture stress, mineral deficiency, and insect patterns.
+    </p>
+
+    <!-- Camera Box -->
+    <div class="camera-container">
+      <video id="cameraFeed" autoplay playsinline></video>
+      <canvas id="snapshotCanvas" style="display:none"></canvas>
+      <div class="scan-line" id="scanLine"></div>
+    </div>
+
+    <!-- Controls -->
+    <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+      <button id="startCamBtn" class="btn btn-primary" onclick="initCamera()">🎥 Open Camera</button>
+      <button id="captureBtn" class="btn btn-outline" style="display:none" onclick="captureAndDiagnose()">📸 Capture &amp; Run AI Diagnosis</button>
+      <button id="retakeBtn" class="btn btn-sm btn-outline" style="display:none" onclick="retakeCamera()">🔄 Retake</button>
+    </div>
+
+    <!-- Diagnostic Report Card -->
+    <div class="diag-result" id="diagOutput">
+      <div style="font-weight:800;color:var(--forest);font-size:0.95rem;margin-bottom:10px;display:flex;justify-content:space-between">
+        <span>🔬 AI Pathology &amp; Care Report</span>
+        <span id="ai-confidence" style="color:var(--leaf);font-size:0.8rem">Confidence: 94.8%</span>
+      </div>
+
+      <div class="diag-row">
+        <div class="diag-icon">💧</div>
+        <div>
+          <div class="diag-title">Moisture &amp; Water Status</div>
+          <div class="diag-desc" id="diag-water">Turgor pressure reduced. Moderate moisture stress detected.</div>
+        </div>
+      </div>
+
+      <div class="diag-row">
+        <div class="diag-icon">🧪</div>
+        <div>
+          <div class="diag-title">Mineral &amp; Nutrient Deficiencies</div>
+          <div class="diag-desc" id="diag-minerals">Early Interveinal Chlorosis — Nitrogen &amp; Iron supplement suggested.</div>
+        </div>
+      </div>
+
+      <div class="diag-row">
+        <div class="diag-icon">🐛</div>
+        <div>
+          <div class="diag-title">Insect / Pathogen Attack</div>
+          <div class="diag-desc" id="diag-insects">Minor sap-sucking pest spots on leaf edge. No severe fungus.</div>
+        </div>
+      </div>
+
+      <div style="margin-top:14px;display:flex;justify-content:flex-end">
+        <button class="btn btn-primary btn-sm" onclick="applyDiagnosisToForm()">📋 Auto-Fill Details in Form Below</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- AI Species Suggester -->
+  <div class="card" style="margin-bottom:28px">
+    <div style="font-weight:700;color:var(--forest);margin-bottom:12px">🌿 AI Species Suggester</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
+      <div class="form-group" style="margin:0">
+        <label>Location Type</label>
+        <select id="ai-loc">
+          <option value="">— select —</option>
+          <option>Roadside</option>
+          <option>College Campus</option>
+          <option>Open Field</option>
+          <option>Garden / Park</option>
+          <option>Urban Area</option>
+          <option>Rural / Village</option>
+        </select>
+      </div>
+      <div class="form-group" style="margin:0">
+        <label>Soil Type</label>
+        <select id="ai-soil">
+          <option value="">— select —</option>
+          <option>Sandy</option>
+          <option>Loamy</option>
+          <option>Clay</option>
+          <option>Black Cotton</option>
+          <option>Red / Laterite</option>
+        </select>
+      </div>
+    </div>
+    <button class="btn btn-outline btn-sm" onclick="getSuggestion()">Get AI Suggestion</button>
+    <div id="ai-result" style="margin-top:14px;display:none" class="alert alert-success"></div>
+  </div>
+
+  <!-- Tree Form -->
+  <div class="card">
+    <div class="form-group">
+      <label for="species">Tree Species *</label>
+      <input type="text" id="species" placeholder="e.g. Neem, Peepal, Mango, Banyan" required>
+    </div>
+    <div class="form-group">
+      <label for="location">Planting Location *</label>
+      <input type="text" id="location" placeholder="e.g. College Campus, Roadside NH-9" required>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+      <div class="form-group">
+        <label for="soil">Soil Type</label>
+        <select id="soil">
+          <option value="">— select —</option>
+          <option>Sandy</option>
+          <option>Loamy</option>
+          <option>Clay</option>
+          <option>Black Cotton</option>
+          <option>Red / Laterite</option>
+          <option>Unknown</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="planted">Date Planted</label>
+        <input type="date" id="planted">
+      </div>
+      <div class="form-group">
+        <label for="health">Current Health</label>
+        <select id="health">
+          <option>Unknown</option>
+          <option>Healthy</option>
+          <option>Needs Water</option>
+          <option>Unhealthy</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="water">Water Every (days)</label>
+        <input type="number" id="water" min="1" max="30" value="3">
+      </div>
+    </div>
+    <div class="form-group">
+      <label for="growth">Current Height / Growth (cm)</label>
+      <input type="number" id="growth" min="0" value="0" placeholder="0">
+    </div>
+    <div class="form-group">
+      <label for="notes">Notes / Observations</label>
+      <textarea id="notes" placeholder="Observations about soil, pests, or AI leaf diagnostics…"></textarea>
+    </div>
+
+    <div id="form-error" class="alert alert-warn" style="display:none;margin-bottom:16px">
+      <span>⚠️</span> <span id="form-error-msg"></span>
+    </div>
+
+    <div style="display:flex;gap:10px">
+      <button class="btn btn-primary" onclick="saveTree()">🌱 Save Tree</button>
+      <a href="trees.html" class="btn btn-outline">Cancel</a>
+    </div>
+  </div>
+</div>
+
+<footer>
+  Dr. D. Y. Patil College of Engineering and Innovation &nbsp;·&nbsp; Dept. of AI, Data Science &amp; ML &nbsp;·&nbsp; CEP Project 2026
+</footer>
+
+<script src="shared.js"></script>
+<script>
+let streamInstance = null;
+let currentDiagnosis = null;
+
+// ── CAMERA & AI DIAGNOSTIC ENGINE
+function initCamera() {
+  navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
+    .then(stream => {
+      streamInstance = stream;
+      const video = document.getElementById('cameraFeed');
+      video.srcObject = stream;
+      video.style.display = 'block';
+      document.getElementById('snapshotCanvas').style.display = 'none';
+      document.getElementById('startCamBtn').style.display = 'none';
+      document.getElementById('captureBtn').style.display = 'inline-flex';
+      document.getElementById('retakeBtn').style.display = 'none';
+    })
+    .catch(err => {
+      alert('Camera access denied or unreadable. Please ensure you are running on localhost via Live Server.');
+    });
+}
+
+function captureAndDiagnose() {
+  const video = document.getElementById('cameraFeed');
+  const canvas = document.getElementById('snapshotCanvas');
+  const scanLine = document.getElementById('scanLine');
+  const diagOutput = document.getElementById('diagOutput');
+
+  // Freeze image onto canvas
+  canvas.width = video.videoWidth || 640;
+  canvas.height = video.videoHeight || 480;
+  const ctx = canvas.getContext('2d');
+  ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+  video.style.display = 'none';
+  canvas.style.display = 'block';
+  scanLine.style.display = 'block';
+
+  document.getElementById('captureBtn').style.display = 'none';
+
+  // Simulate AI Vision Scan
+  setTimeout(() => {
+    scanLine.style.display = 'none';
+    document.getElementById('retakeBtn').style.display = 'inline-flex';
+
+    // Heuristic multi-pattern outcomes
+    const presets = [
+      {
+        health: 'Needs Water',
+        water: 'Water Deficit: Low leaf cell turgor detected. Immediate watering needed.',
+        minerals: 'Mild Nitrogen (N) deficiency indicated by faint pale green leaf margins.',
+        insects: 'No harmful insect clusters detected. Clean surface veins.',
+        waterDays: 2,
+        notes: 'AI Diagnosis: Water deficit observed. Pale leaves indicate mild nitrogen need.'
+      },
+      {
+        health: 'Unhealthy',
+        water: 'Moisture Adequate, but transpiration blocked.',
+        minerals: 'Iron & Zinc deficiency: Visible interveinal yellowing pattern.',
+        insects: 'Aphid / Mite spots detected on leaf underside. Spray neem oil (5ml/L).',
+        waterDays: 3,
+        notes: 'AI Diagnosis: Aphid infestation & Iron deficiency. Treat with organic pesticide.'
+      },
+      {
+        health: 'Healthy',
+        water: 'Optimum cellular hydration. Foliage crisp and turgid.',
+        minerals: 'Balanced N-P-K mineral levels. Deep chlorophyll pigmentation.',
+        insects: 'No pest presence or fungal sporulation.',
+        waterDays: 4,
+        notes: 'AI Diagnosis: Tree leaf is healthy and well-nourished.'
+      }
+    ];
+
+    currentDiagnosis = presets[Math.floor(Math.random() * presets.length)];
+
+    document.getElementById('diag-water').textContent = currentDiagnosis.water;
+    document.getElementById('diag-minerals').textContent = currentDiagnosis.minerals;
+    document.getElementById('diag-insects').textContent = currentDiagnosis.insects;
+    diagOutput.style.display = 'block';
+  }, 1200);
+}
+
+function retakeCamera() {
+  document.getElementById('diagOutput').style.display = 'none';
+  document.getElementById('snapshotCanvas').style.display = 'none';
+  document.getElementById('cameraFeed').style.display = 'block';
+  document.getElementById('captureBtn').style.display = 'inline-flex';
+  document.getElementById('retakeBtn').style.display = 'none';
+}
+
+function applyDiagnosisToForm() {
+  if (!currentDiagnosis) return;
+  document.getElementById('health').value = currentDiagnosis.health;
+  document.getElementById('water').value = currentDiagnosis.waterDays;
+  document.getElementById('notes').value = currentDiagnosis.notes;
+  alert('Diagnosis successfully applied to the tree form!');
+  window.scrollTo({ top: document.querySelector('.card:last-of-type').offsetTop - 60, behavior: 'smooth' });
+}
+
+// ── SPECIES SUGGESTER
+const SUGGESTIONS = {
+  'Roadside': { Sandy: 'Babool (Acacia nilotica) — drought-hardy, thrives on roadsides', Loamy: 'Neem — fast-growing, excellent shade', Clay: 'Peepal — deep roots, handles clay well', 'Black Cotton': 'Tamarind — strong taproot for black soil', 'Red / Laterite': 'Casuarina — adapts well to laterite', '': 'Neem or Peepal — common roadside choices' },
+  'College Campus': { Sandy: 'Rain Tree (Samanea saman) — wide canopy, decorative', Loamy: 'Gulmohar — beautiful flowers, moderate water', Clay: 'Banyan — iconic, low maintenance', 'Black Cotton': 'Ashoka Tree — ornamental, black soil compatible', 'Red / Laterite': 'Mango — fruit-bearing, laterite-friendly', '': 'Banyan or Gulmohar — campus classics' },
+  'Open Field': { Sandy: 'Teak — commercial timber, sandy preferred', Loamy: 'Eucalyptus — fast growth in open fields', Clay: 'Bamboo — excellent for clay, erosion control', 'Black Cotton': 'Amla (Indian Gooseberry) — medicinal, black soil', 'Red / Laterite': 'Cashew — laterite-native, high value', '': 'Eucalyptus or Teak' },
+  'Garden / Park': { Sandy: 'Bougainvillea tree — colourful, low water', Loamy: 'Frangipani — fragrant, garden favourite', Clay: 'Bottlebrush — clay tolerant, attracts birds', 'Black Cotton': 'Coconut Palm — parks in black soil areas', 'Red / Laterite': 'Jackfruit — thrives in warm laterite soil', '': 'Frangipani or Gulmohar' },
+  'Urban Area': { Sandy: 'Drumstick (Moringa) — fast, nutritious, urban-friendly', Loamy: 'Curry Leaf — small tree, useful', Clay: 'Pilkhan (Ficus virens) — urban-resilient', 'Black Cotton': 'Karanj (Pongamia) — pollution-tolerant', 'Red / Laterite': 'Flame of the Forest — striking, urban parks', '': 'Neem or Pongamia — urban pollution fighters' },
+  'Rural / Village': { Sandy: 'Prosopis (Mesquite) — firewood, sandy soil', Loamy: 'Mango — fruit, shade, income', Clay: 'Ber (Indian Jujube) — fruit, clay hardy', 'Black Cotton': 'Cotton Tree (Bombax) — village landscapes', 'Red / Laterite': 'Mahua — food, medicine, laterite-native', '': 'Mango or Amla — multipurpose village trees' },
+};
+
+function getSuggestion() {
+  const loc  = document.getElementById('ai-loc').value;
+  const soil = document.getElementById('ai-soil').value;
+  if (!loc) { alert('Please select a location type first.'); return; }
+  const map = SUGGESTIONS[loc] || {};
+  const suggestion = map[soil] || map[''] || 'Neem — versatile choice for Indian soil';
+  const res = document.getElementById('ai-result');
+  res.style.display = 'flex';
+  res.innerHTML = `<span>🤖</span><div><strong>AI Recommends:</strong> ${suggestion}</div>`;
+}
+
+// ── SAVE TREE
+function saveTree() {
+  const species  = document.getElementById('species').value.trim();
+  const location = document.getElementById('location').value.trim();
+  const errEl    = document.getElementById('form-error');
+  const errMsg   = document.getElementById('form-error-msg');
+
+  if (!species || !location) {
+    errEl.style.display = 'flex';
+    errMsg.textContent = 'Species name and location are required.';
+    return;
+  }
+  errEl.style.display = 'none';
+
+  const data = {
+    species,
+    location,
+    soilType:    document.getElementById('soil').value || 'Unknown',
+    plantedDate: document.getElementById('planted').value,
+    health:      document.getElementById('health').value,
+    waterEvery:  parseInt(document.getElementById('water').value) || 3,
+    growth:      parseInt(document.getElementById('growth').value) || 0,
+    notes:       document.getElementById('notes').value.trim(),
+  };
+
+  ST.addTree(data);
+  window.location.href = 'trees.html';
+}
+</script>
+</body>
+</html>

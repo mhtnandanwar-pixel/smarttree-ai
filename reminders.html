@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SmartTree AI — Reminders</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<nav>
+  <a class="nav-brand" href="index.html"><span class="leaf-icon">🌿</span> SmartTree AI</a>
+  <a href="index.html">Dashboard</a>
+  <a href="trees.html">My Trees</a>
+  <a href="add-tree.html">+ Add Tree</a>
+  <a href="reminders.html" class="active">Reminders</a>
+  <a href="about.html">About</a>
+</nav>
+
+<div class="page" style="max-width:700px">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+    <div>
+      <div class="page-title">Reminders</div>
+      <div class="page-sub">Watering, maintenance, and care alerts for your trees</div>
+    </div>
+    <button class="btn btn-primary" onclick="openModal()">+ New Reminder</button>
+  </div>
+
+  <!-- Auto-generated watering reminders -->
+  <div id="auto-reminders" style="margin-bottom:28px"></div>
+
+  <!-- Manual reminders -->
+  <div class="section-head">
+    <h2>Your Reminders</h2>
+  </div>
+  <div id="manual-reminders"></div>
+</div>
+
+<footer>
+  Dr. D. Y. Patil College of Engineering and Innovation &nbsp;·&nbsp; Dept. of AI, Data Science &amp; ML &nbsp;·&nbsp; CEP Project 2026
+</footer>
+
+<!-- Add Reminder Modal -->
+<div class="modal-backdrop" id="add-modal">
+  <div class="modal">
+    <div class="modal-head">
+      <h3>Add Reminder</h3>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="form-group">
+      <label>Linked Tree (optional)</label>
+      <select id="r-tree">
+        <option value="">— General reminder —</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Reminder Message *</label>
+      <input type="text" id="r-msg" placeholder="e.g. Check soil moisture, apply compost…">
+    </div>
+    <div class="form-group">
+      <label>Due Date</label>
+      <input type="date" id="r-date">
+    </div>
+    <div style="display:flex;gap:10px;justify-content:flex-end">
+      <button class="btn btn-outline" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveReminder()">Save Reminder</button>
+    </div>
+  </div>
+</div>
+
+<script src="shared.js"></script>
+<script>
+function render() {
+  const trees     = ST.getTrees();
+  const reminders = ST.getReminders();
+  const today     = new Date();
+
+  // ── Auto watering suggestions based on plantedDate + waterEvery
+  const autoEl = document.getElementById('auto-reminders');
+  const dueToday = trees.filter(t => {
+    if (!t.plantedDate || !t.waterEvery) return false;
+    const planted = new Date(t.plantedDate);
+    const daysSince = Math.floor((today - planted) / 86400000);
+    return daysSince >= 0 && daysSince % t.waterEvery === 0;
+  });
+
+  if (dueToday.length > 0) {
+    autoEl.innerHTML = `
+      <div style="font-weight:700;color:var(--forest);margin-bottom:10px">💧 AI Watering Alerts — Today</div>
+      ${dueToday.map(t => `
+        <div class="alert alert-info" style="margin-bottom:10px">
+          <span>💧</span>
+          <div>
+            <strong>${t.species}</strong> at ${t.location} is due for watering today.
+            <span style="font-size:.8rem;opacity:.8">(Every ${t.waterEvery} days schedule)</span>
+            <div style="margin-top:6px">
+              <a href="tree-detail.html?id=${t.id}" class="btn btn-outline btn-sm" style="font-size:.78rem">View Tree</a>
+            </div>
+          </div>
+        </div>
+      `).join('')}
+    `;
+  } else {
+    autoEl.innerHTML = `
+      <div class="alert alert-success" style="margin-bottom:24px">
+        <span>✅</span>
+        <div>No watering due today based on your tree schedules. All trees are on track.</div>
+      </div>
+    `;
+  }
+
+  // ── Manual reminders
+  const manEl = document.getElementById('manual-reminders');
+  if (reminders.length === 0) {
+    manEl.innerHTML = `<div class="empty" style="padding:36px 24px">
+      <div class="icon">🔔</div>
+      <p>No reminders set. Add one to stay on top of tree care.</p>
+    </div>`;
+    return;
+  }
+
+  manEl.innerHTML = reminders.map(r => {
+    const linkedTree = r.treeId ? trees.find(t => t.id === r.treeId) : null;
+    const overdue = r.dueDate && new Date(r.dueDate) < today;
+    return `
+      <div class="card" style="margin-bottom:12px;display:flex;align-items:flex-start;gap:14px">
+        <div style="font-size:1.5rem;line-height:1;padding-top:2px">${overdue ? '⚠️' : '🔔'}</div>
+        <div style="flex:1">
+          <div style="font-weight:600;color:var(--ink)">${r.message}</div>
+          ${linkedTree ? `<div style="font-size:.8rem;color:var(--leaf);margin-top:3px">🌳 ${linkedTree.species} — ${linkedTree.location}</div>` : ''}
+          ${r.dueDate ? `<div style="font-size:.8rem;color:${overdue ? 'var(--danger)' : 'var(--muted)'};margin-top:3px">${overdue ? '⚠️ Overdue: ' : '📅 Due: '}${ST.formatDate(r.dueDate)}</div>` : ''}
+        </div>
+        <button class="btn btn-sm" style="background:#fdecea;color:var(--danger);border:none;white-space:nowrap" onclick="dismiss('${r.id}')">Dismiss</button>
+      </div>
+    `;
+  }).join('');
+}
+
+function openModal() {
+  const trees = ST.getTrees();
+  const sel = document.getElementById('r-tree');
+  sel.innerHTML = '<option value="">— General reminder —</option>' +
+    trees.map(t => `<option value="${t.id}">${t.species} — ${t.location}</option>`).join('');
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('r-date').value = today;
+  document.getElementById('r-msg').value = '';
+  document.getElementById('add-modal').classList.add('open');
+}
+function closeModal() {
+  document.getElementById('add-modal').classList.remove('open');
+}
+function saveReminder() {
+  const msg = document.getElementById('r-msg').value.trim();
+  if (!msg) { alert('Please enter a reminder message.'); return; }
+  ST.addReminder({
+    treeId:  document.getElementById('r-tree').value || null,
+    message: msg,
+    dueDate: document.getElementById('r-date').value || null,
+  });
+  closeModal();
+  render();
+}
+function dismiss(id) {
+  ST.dismissReminder(id);
+  render();
+}
+
+render();
+</script>
+</body>
+</html>

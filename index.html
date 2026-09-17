@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SmartTree AI — Dashboard</title>
+  <link rel="stylesheet" href="style.css">
+  <!-- Leaflet Map CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+</head>
+<body>
+
+<nav>
+  <a class="nav-brand" href="index.html">
+    <span class="leaf-icon">🌿</span> SmartTree AI
+  </a>
+  <a href="index.html" class="active">Dashboard</a>
+  <a href="trees.html">My Trees</a>
+  <a href="add-tree.html">+ Add Tree</a>
+  <a href="reminders.html">Reminders</a>
+  <a href="pricing.html">Plans &amp; Pro <span class="badge-pro" id="nav-pro-badge" style="display:none">ACTIVE</span></a>
+  <a href="about.html">About</a>
+</nav>
+
+<div class="page">
+
+  <div class="hero">
+    <h1>Track trees that<br>survive and grow.</h1>
+    <p>SmartTree AI helps you plant the right tree in the right place — and keep it alive through live weather correlation and AI monitoring.</p>
+    <div class="hero-cta">
+      <a href="add-tree.html" class="btn btn-primary" style="background:#fff;color:var(--forest);">🌱 Diagnose &amp; Add Tree</a>
+      <a href="pricing.html" class="btn btn-outline" style="border-color:rgba(255,255,255,.5);color:#fff;">Upgrade to Pro</a>
+    </div>
+  </div>
+
+  <!-- 1. LIVE DYNAMIC WEATHER WIDGET -->
+  <div class="weather-card" id="weather-widget">
+    <div class="weather-left">
+      <div class="weather-icon" id="w-icon">⛅</div>
+      <div>
+        <div style="font-weight:700;color:var(--forest);font-size:0.95rem">
+          📍 <span id="w-location">Requesting location...</span>
+        </div>
+        <div class="weather-details" id="w-desc">Fetching live local atmosphere...</div>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:20px;flex-wrap:wrap">
+      <div>
+        <span class="weather-temp" id="w-temp">--°C</span>
+        <div style="font-size:0.75rem;color:var(--muted)">Live Temperature</div>
+      </div>
+      <div class="weather-tag" id="w-water-index">
+        💧 <span>Watering Need: Calculating...</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- STATS -->
+  <div class="stat-row" id="stats"></div>
+
+  <!-- REMINDERS BANNER -->
+  <div id="reminder-banner"></div>
+
+  <!-- 2. MAHARASHTRA DISTRICT TREE LANDSCAPE MAP -->
+  <div class="card" style="margin-bottom:36px">
+    <div class="section-head" style="margin-bottom:8px">
+      <h2>🗺️ Maharashtra District Tree Landscape &amp; Forest Density</h2>
+      <span style="font-size:0.8rem;color:var(--muted)">District-level canopy indicator</span>
+    </div>
+    <p style="font-size:0.85rem;color:var(--muted);margin-bottom:14px">
+      Click on any district marker to inspect estimated forest density, primary tree species, and survival vulnerability index.
+    </p>
+    
+    <div id="map"></div>
+
+    <div class="map-legend">
+      <span><span class="legend-dot" style="background:#16a34a"></span> <strong>Dense Green</strong> (&gt;30% Tree Cover)</span>
+      <span><span class="legend-dot" style="background:#eab308"></span> <strong>Moderate Yellow</strong> (15–30% Cover)</span>
+      <span><span class="legend-dot" style="background:#f97316"></span> <strong>Low Orange</strong> (5–15% Cover)</span>
+      <span><span class="legend-dot" style="background:#dc2626"></span> <strong>Critical Red</strong> (&lt;5% Cover / Drought Zone)</span>
+    </div>
+  </div>
+
+  <!-- RECENT TREES -->
+  <div class="section-head">
+    <h2>Recently Added Trees</h2>
+    <a href="trees.html" class="btn btn-outline btn-sm">See all →</a>
+  </div>
+  <div class="card-grid" id="recent-trees"></div>
+
+</div>
+
+<footer>
+  Dr. D. Y. Patil College of Engineering and Innovation &nbsp;·&nbsp; Dept. of AI, Data Science &amp; ML &nbsp;·&nbsp; CEP Project 2026
+</footer>
+
+<!-- Leaflet.js script -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="shared.js"></script>
+<script>
+ST.seedDemo();
+
+// Check Pro Status for navigation badge
+if (ST.isProUser()) {
+  document.getElementById('nav-pro-badge').style.display = 'inline-block';
+}
+
+// ── 1. DYNAMIC LIVE WEATHER INTEGRATION
+async function fetchLiveWeather(lat, lon, locationName) {
+  try {
+    const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m`);
+    const data = await res.json();
+    const temp = Math.round(data.current.temperature_2m);
+    const humidity = data.current.relative_humidity_2m;
+    const wind = data.current.wind_speed_10m;
+
+    document.getElementById('w-location').textContent = locationName;
+    document.getElementById('w-temp').textContent = `${temp}°C`;
+    document.getElementById('w-desc').textContent = `Humidity: ${humidity}% | Wind: ${wind} km/h`;
+
+    // Smart Tree Evaporation & Watering Advice
+    const tagEl = document.getElementById('w-water-index');
+    if (temp >= 33 || humidity < 35) {
+      tagEl.innerHTML = '🔥 <span style="color:#b91c1c">High Evaporation: Water Trees Morning &amp; Evening</span>';
+      tagEl.style.borderColor = '#fca5a5';
+    } else if (temp <= 22 || humidity > 75) {
+      tagEl.innerHTML = '💧 <span style="color:#15803d">High Moisture: Retain Watering Today</span>';
+      tagEl.style.borderColor = '#86efac';
+    } else {
+      tagEl.innerHTML = '🌱 <span style="color:#1e40af">Normal Evaporation: Maintain Regular Schedule</span>';
+      tagEl.style.borderColor = '#93c5fd';
+    }
+  } catch (err) {
+    document.getElementById('w-desc').textContent = 'Live weather currently offline.';
+  }
+}
+
+function initDynamicWeather() {
+  if ("geolocation" in navigator) {
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        const lat = position.coords.latitude;
+        const lon = position.coords.longitude;
+        
+        let locName = "Current Location";
+        try {
+            // Free Reverse Geocoding API (Added zoom=18 for street/village level detail)
+            const geoRes = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=18&addressdetails=1`);
+            const geoData = await geoRes.json();
+            const addr = geoData.address;
+            
+            // Look for the most precise local name first, then fall back to larger areas
+            locName = addr.hamlet || addr.village || addr.suburb || addr.neighbourhood || addr.town || addr.city || addr.county || "Local Area";
+        } catch (e) {
+            console.log("Geocoding failed, using generic name");
+        }
+        
+        fetchLiveWeather(lat, lon, locName);
+      },
+      (error) => {
+        // Fallback to Talegaon if user denies location permission
+        fetchLiveWeather(18.73, 73.68, "Talegaon Dabhade (Default)");
+      },
+      {
+        // THIS IS THE MAGIC FIX FOR PRECISION
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 0 // Do not use old cached locations
+      }
+    );
+  } else {
+    // Fallback if browser doesn't support geolocation
+    fetchLiveWeather(18.73, 73.68, "Talegaon Dabhade (Default)");
+  }
+}
+
+// Trigger the dynamic weather load
+initDynamicWeather();
+
+// ── 2. MAHARASHTRA DISTRICT MAP (Leaflet.js)
+function initMaharashtraMap() {
+  const map = L.map('map').setView([19.2, 76.5], 6.5);
+
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; OpenStreetMap contributors'
+  }).addTo(map);
+
+  const districts = [
+    { name: 'Gadchiroli', lat: 20.18, lon: 80.00, cover: '68%', status: 'green', color: '#16a34a', desc: 'Dense deciduous &amp; bamboo forests. High biodiversity.' },
+    { name: 'Ratnagiri', lat: 16.99, lon: 73.31, cover: '54%', status: 'green', color: '#16a34a', desc: 'Konkan evergreen belt. Mango, cashew, and laterite flora.' },
+    { name: 'Nagpur', lat: 21.14, lon: 79.08, cover: '31%', status: 'green', color: '#16a34a', desc: 'Eastern Vidarbha teak forest corridor. Good tree survival.' },
+    { name: 'Thane', lat: 19.21, lon: 72.97, cover: '38%', status: 'green', color: '#16a34a', desc: 'Northern Western Ghats. High mangrove &amp; secondary forest.' },
+    { name: 'Pune (Talegaon Campus)', lat: 18.73, lon: 73.68, cover: '22%', status: 'yellow', color: '#eab308', desc: 'Western Ghats transition. Ideal for Neem, Peepal, Gulmohar.' },
+    { name: 'Nashik', lat: 19.99, lon: 73.78, cover: '17%', status: 'yellow', color: '#eab308', desc: 'Semi-arid plateaus. Requires drought-resistant species.' },
+    { name: 'Kolhapur', lat: 16.70, lon: 74.24, cover: '26%', status: 'yellow', color: '#eab308', desc: 'Southern Ghats. Rich alluvial &amp; red soil.' },
+    { name: 'Chhatrapati Sambhajinagar', lat: 19.87, lon: 75.34, cover: '9%', status: 'orange', color: '#f97316', desc: 'Marathwada dry zone. High summer heat stress for young trees.' },
+    { name: 'Amravati', lat: 20.93, lon: 77.75, cover: '14%', status: 'orange', color: '#f97316', desc: 'Melghat fringe zone. Moderate black cotton soil canopy.' },
+    { name: 'Solapur', lat: 17.65, lon: 75.90, cover: '3.2%', status: 'red', color: '#dc2626', desc: 'Critically low tree cover. Frequent drought; drip irrigation required.' },
+    { name: 'Latur', lat: 18.40, lon: 76.56, cover: '2.1%', status: 'red', color: '#dc2626', desc: 'Severe deforestation risk zone. Emergency community drives needed.' }
+  ];
+
+  districts.forEach(d => {
+    const circle = L.circleMarker([d.lat, d.lon], {
+      radius: 11,
+      fillColor: d.color,
+      color: '#ffffff',
+      weight: 2,
+      opacity: 1,
+      fillOpacity: 0.85
+    }).addTo(map);
+
+    const popupHtml = `
+      <div style="font-family:sans-serif;font-size:13px;min-width:180px">
+        <strong style="color:#1a4d2e;font-size:14px">${d.name}</strong><br>
+        <div style="margin:4px 0"><strong>Tree Cover:</strong> ${d.cover}</div>
+        <p style="margin:0 0 6px;color:#555;font-size:12px">${d.desc}</p>
+        <span style="font-size:11px;padding:2px 8px;border-radius:10px;background:${d.color};color:#fff;font-weight:700">
+          Status: ${d.status.toUpperCase()}
+        </span>
+      </div>
+    `;
+    circle.bindPopup(popupHtml);
+  });
+}
+window.addEventListener('load', initMaharashtraMap);
+
+// ── 3. STATS & RECENT TREES RENDER
+function render() {
+  const trees = ST.getTrees();
+  const reminders = ST.getReminders();
+
+  const healthy    = trees.filter(t => t.health === 'Healthy').length;
+  const needsWater = trees.filter(t => t.health === 'Needs Water').length;
+  const unhealthy  = trees.filter(t => t.health === 'Unhealthy').length;
+
+  document.getElementById('stats').innerHTML = `
+    <div class="stat-box"><div class="val">${trees.length}</div><div class="lbl">Total Trees Tracked</div></div>
+    <div class="stat-box"><div class="val" style="color:var(--sprout)">${healthy}</div><div class="lbl">Healthy</div></div>
+    <div class="stat-box"><div class="val" style="color:var(--sky)">${needsWater}</div><div class="lbl">Needs Water</div></div>
+    <div class="stat-box"><div class="val" style="color:var(--danger)">${unhealthy}</div><div class="lbl">Unhealthy</div></div>
+    <div class="stat-box"><div class="val">${reminders.length}</div><div class="lbl">Active Reminders</div></div>
+  `;
+
+  const rb = document.getElementById('reminder-banner');
+  if (reminders.length > 0) {
+    rb.innerHTML = `<div class="alert alert-warn" style="margin-bottom:24px">
+      <span>🔔</span>
+      <div><strong>${reminders.length} reminder${reminders.length > 1 ? 's' : ''} pending</strong> — ${reminders[0].message}
+      &nbsp;<a href="reminders.html" style="color:inherit;font-weight:700">View all →</a></div>
+    </div>`;
+  } else {
+    rb.innerHTML = '';
+  }
+
+  const recent = [...trees].reverse().slice(0, 3);
+  const rc = document.getElementById('recent-trees');
+  if (recent.length === 0) {
+    rc.innerHTML = `<div class="empty" style="grid-column:1/-1">
+      <div class="icon">🌱</div>
+      <p>No trees tracked yet. Add your first tree to get started.</p>
+      <a href="add-tree.html" class="btn btn-primary">Add a Tree</a>
+    </div>`;
+  } else {
+    rc.innerHTML = recent.map(t => `
+      <div class="tree-card">
+        <div class="tree-card-top">
+          <div>
+            <div class="tree-card-name">🌳 ${t.species}</div>
+            <div class="tree-card-loc">📍 ${t.location}</div>
+          </div>
+          ${ST.healthBadge(t.health)}
+        </div>
+        <div class="tree-card-meta">
+          <span>Planted</span><strong>${ST.formatDate(t.plantedDate)}</strong>
+          <span>Soil</span><strong>${t.soilType}</strong>
+          <span>Growth</span><strong>${t.growth || 0} cm</strong>
+          <span>Water every</span><strong>${t.waterEvery} days</strong>
+        </div>
+        <div class="tree-card-actions">
+          <a href="tree-detail.html?id=${t.id}" class="btn btn-outline btn-sm">View Details</a>
+        </div>
+      </div>
+    `).join('');
+  }
+}
+render();
+</script>
+</body>
+</html>

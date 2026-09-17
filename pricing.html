@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SmartTree AI — Plans &amp; Monetization</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<nav>
+  <a class="nav-brand" href="index.html"><span class="leaf-icon">🌿</span> SmartTree AI</a>
+  <a href="index.html">Dashboard</a>
+  <a href="trees.html">My Trees</a>
+  <a href="add-tree.html">+ Add Tree</a>
+  <a href="reminders.html">Reminders</a>
+  <a href="pricing.html" class="active">Plans &amp; Pro</a>
+  <a href="about.html">About</a>
+</nav>
+
+<div class="page">
+  <div style="text-align:center;max-width:680px;margin:0 auto 36px">
+    <div class="page-title">Smarter Tree Care, Built for Scale</div>
+    <div class="page-sub" style="margin-bottom:12px">
+      Choose a plan to empower students, institutions, and municipal drives with automated AI monitoring and diagnostics.
+    </div>
+    <div id="active-status-bar" style="display:none;background:#dcfce7;border:1px solid #86efac;color:#166534;padding:8px 16px;border-radius:20px;font-size:0.85rem;font-weight:700;display:inline-block">
+      🌟 SmartTree PRO Activated on this browser
+    </div>
+  </div>
+
+  <!-- 4. MONETIZATION TIERS -->
+  <div class="pricing-grid">
+    
+    <!-- Free Tier -->
+    <div class="pricing-card">
+      <div style="font-weight:700;color:var(--forest);font-size:1.1rem">Student / Free</div>
+      <div style="color:var(--muted);font-size:0.82rem;margin-top:2px">For individual hobbyists &amp; schools</div>
+      <div class="price-tag">₹0 <span>/ forever</span></div>
+      <ul class="pricing-features">
+        <li>✔️ Track up to 5 trees</li>
+        <li>✔️ Basic manual watering schedule</li>
+        <li>✔️ Basic AI species recommendations</li>
+        <li style="opacity:0.5">✖️ Camera AI leaf pathology</li>
+        <li style="opacity:0.5">✖️ Live weather correlation</li>
+      </ul>
+      <button class="btn btn-outline" style="width:100%" disabled>Current Base Plan</button>
+    </div>
+
+    <!-- Campus & NGO Pro -->
+    <div class="pricing-card featured">
+      <div style="font-weight:700;color:var(--leaf);font-size:1.1rem">SmartTree Pro</div>
+      <div style="color:var(--muted);font-size:0.82rem;margin-top:2px">For colleges, NGOs &amp; environmental groups</div>
+      <div class="price-tag">₹499 <span>/ month</span></div>
+      <ul class="pricing-features">
+        <li>✔️ <strong>Unlimited</strong> tree records</li>
+        <li>✔️ <strong>Full Camera AI Diagnostics</strong> (Water, Minerals, Pests)</li>
+        <li>✔️ <strong>Live Weather Auto-Reminders</strong></li>
+        <li>✔️ Maharashtra District GIS density analytics</li>
+        <li>✔️ Growth progress PDF export</li>
+      </ul>
+      <button class="btn btn-primary" id="btn-pro" style="width:100%" onclick="openCheckout('SmartTree Pro (NGO / Campus)', 499)">
+        Activate Pro Access
+      </button>
+    </div>
+
+    <!-- Enterprise CSR -->
+    <div class="pricing-card">
+      <div style="font-weight:700;color:var(--forest);font-size:1.1rem">Enterprise CSR</div>
+      <div style="color:var(--muted);font-size:0.82rem;margin-top:2px">For municipal corporations &amp; CSR corporate drives</div>
+      <div class="price-tag">₹2,499 <span>/ month</span></div>
+      <ul class="pricing-features">
+        <li>✔️ Multi-campus tracking dashboard</li>
+        <li>✔️ Drone &amp; satellite canopy audits</li>
+        <li>✔️ Verified CSR carbon offset certificates</li>
+        <li>✔️ Dedicated agronomist API support</li>
+      </ul>
+      <button class="btn btn-outline" style="width:100%" onclick="openCheckout('Enterprise CSR Package', 2499)">
+        Simulate Enterprise Demo
+      </button>
+    </div>
+
+  </div>
+</div>
+
+<!-- DEMO CHECKOUT MODAL -->
+<div class="modal-backdrop" id="checkout-modal">
+  <div class="modal">
+    <div class="modal-head">
+      <h3>Demo Payment Simulator</h3>
+      <button class="modal-close" onclick="closeCheckout()">✕</button>
+    </div>
+    
+    <div style="background:var(--mist);padding:14px;border-radius:8px;margin-bottom:18px">
+      <div style="font-size:0.85rem;color:var(--muted)">Selected Plan</div>
+      <div style="font-weight:700;color:var(--forest);font-size:1.1rem" id="modal-plan-name">SmartTree Pro</div>
+      <div style="font-size:1rem;font-weight:800;color:var(--ink)" id="modal-plan-price">₹499 / mo</div>
+    </div>
+
+    <div class="form-group">
+      <label>Demo Organization / Subscriber Name</label>
+      <input type="text" id="demo-name" value="Dr. D. Y. Patil COE &amp; Innovation" required>
+    </div>
+
+    <div class="form-group">
+      <label>Demo UPI ID or Payment Gateway</label>
+      <input type="text" id="demo-upi" value="student@okhdfcbank">
+    </div>
+
+    <div style="display:flex;gap:10px;justify-content:flex-end">
+      <button class="btn btn-outline" onclick="closeCheckout()">Cancel</button>
+      <button class="btn btn-primary" onclick="confirmPayment()">💳 Authorize &amp; Unlock Pro</button>
+    </div>
+  </div>
+</div>
+
+<footer>
+  Dr. D. Y. Patil College of Engineering and Innovation &nbsp;·&nbsp; Dept. of AI, Data Science &amp; ML &nbsp;·&nbsp; CEP Project 2026
+</footer>
+
+<script src="shared.js"></script>
+<script>
+let selectedTier = '';
+
+function updateUI() {
+  const isPro = ST.isProUser();
+  const statusBar = document.getElementById('active-status-bar');
+  const proBtn = document.getElementById('btn-pro');
+  if (isPro) {
+    statusBar.style.display = 'inline-block';
+    proBtn.textContent = 'Active (Subscribed)';
+    proBtn.classList.remove('btn-primary');
+    proBtn.classList.add('btn-outline');
+  } else {
+    statusBar.style.display = 'none';
+    proBtn.textContent = 'Activate Pro Access';
+  }
+}
+updateUI();
+
+function openCheckout(planName, amount) {
+  selectedTier = planName;
+  document.getElementById('modal-plan-name').textContent = planName;
+  document.getElementById('modal-plan-price').textContent = `₹${amount} / month`;
+  document.getElementById('checkout-modal').classList.add('open');
+}
+
+function closeCheckout() {
+  document.getElementById('checkout-modal').classList.remove('open');
+}
+
+function confirmPayment() {
+  ST.activateProPlan(selectedTier);
+  closeCheckout();
+  alert(`Payment Authorized! ${selectedTier} is now active on your local workspace.`);
+  updateUI();
+}
+</script>
+</body>
+</html>

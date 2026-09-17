@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SmartTree AI — Tree Detail</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<nav>
+  <a class="nav-brand" href="index.html"><span class="leaf-icon">🌿</span> SmartTree AI</a>
+  <a href="index.html">Dashboard</a>
+  <a href="trees.html" class="active">My Trees</a>
+  <a href="add-tree.html">+ Add Tree</a>
+  <a href="reminders.html">Reminders</a>
+  <a href="about.html">About</a>
+</nav>
+
+<div class="page" style="max-width:720px">
+  <div style="margin-bottom:20px">
+    <a href="trees.html" style="color:var(--leaf);font-size:.875rem;text-decoration:none;font-weight:600">← Back to My Trees</a>
+  </div>
+  <div id="content"></div>
+</div>
+
+<footer>
+  Dr. D. Y. Patil College of Engineering and Innovation &nbsp;·&nbsp; Dept. of AI, Data Science &amp; ML &nbsp;·&nbsp; CEP Project 2026
+</footer>
+
+<!-- Growth Log Modal -->
+<div class="modal-backdrop" id="log-modal">
+  <div class="modal">
+    <div class="modal-head">
+      <h3>Log Growth Update</h3>
+      <button class="modal-close" onclick="closeLogModal()">✕</button>
+    </div>
+    <div class="form-group">
+      <label>Date</label>
+      <input type="date" id="log-date">
+    </div>
+    <div class="form-group">
+      <label>Height / Growth (cm)</label>
+      <input type="number" id="log-height" min="0" placeholder="Current height in cm">
+    </div>
+    <div class="form-group">
+      <label>Health Status</label>
+      <select id="log-health">
+        <option>Healthy</option>
+        <option>Needs Water</option>
+        <option>Unhealthy</option>
+        <option>Unknown</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Observation Notes</label>
+      <textarea id="log-notes" placeholder="What did you observe today?"></textarea>
+    </div>
+    <div style="display:flex;gap:10px;justify-content:flex-end">
+      <button class="btn btn-outline" onclick="closeLogModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveLog()">Save Log</button>
+    </div>
+  </div>
+</div>
+
+<script src="shared.js"></script>
+<script>
+const params = new URLSearchParams(location.search);
+const id = params.get('id');
+let tree = null;
+
+function render() {
+  tree = ST.getTree(id);
+  if (!tree) {
+    document.getElementById('content').innerHTML = `<div class="empty"><div class="icon">🌾</div><p>Tree not found.</p><a href="trees.html" class="btn btn-primary">Back to Trees</a></div>`;
+    return;
+  }
+
+  // Days since planted
+  let daysSince = '—';
+  if (tree.plantedDate) {
+    const diff = Math.floor((Date.now() - new Date(tree.plantedDate)) / 86400000);
+    daysSince = diff >= 0 ? `${diff} days ago` : 'Future date';
+  }
+
+  // Growth progress (visual — relative to 100cm milestone)
+  const growthPct = Math.min(100, Math.round((tree.growth || 0) / 100 * 100));
+
+  // AI health advice
+  let aiAdvice = '';
+  if (tree.health === 'Healthy') aiAdvice = 'Tree is doing well. Maintain current watering schedule and check for pests monthly.';
+  else if (tree.health === 'Needs Water') aiAdvice = 'Soil appears dry. Water immediately and increase frequency by 1 day. Check soil moisture before next watering.';
+  else if (tree.health === 'Unhealthy') aiAdvice = 'Warning: Tree shows signs of stress. Inspect leaves for disease or pest damage. Consider soil nutrient supplement and increase shade if in direct sun.';
+  else aiAdvice = 'Update the health status after your next inspection to get AI care advice.';
+
+  // Growth log table
+  const logs = (tree.growthLog || []).slice().reverse();
+  const logRows = logs.length > 0
+    ? logs.map(l => `<tr>
+        <td>${ST.formatDate(l.date)}</td>
+        <td>${l.height} cm</td>
+        <td>${ST.healthBadge(l.health)}</td>
+        <td style="color:var(--muted);font-size:.82rem">${l.notes || '—'}</td>
+      </tr>`).join('')
+    : `<tr><td colspan="4" style="text-align:center;color:var(--muted);padding:24px">No growth logs yet. Add one above.</td></tr>`;
+
+  document.getElementById('content').innerHTML = `
+    <!-- Header -->
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:24px;flex-wrap:wrap;gap:12px">
+      <div>
+        <h1 style="font-size:1.9rem;font-weight:800;color:var(--forest)">🌳 ${tree.species}</h1>
+        <div style="color:var(--muted);font-size:.95rem;margin-top:4px">📍 ${tree.location}</div>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        ${ST.healthBadge(tree.health)}
+        <a href="add-tree.html?edit=${tree.id}" class="btn btn-outline btn-sm">✏️ Edit</a>
+      </div>
+    </div>
+
+    <!-- Key stats -->
+    <div class="stat-row" style="margin-bottom:24px">
+      <div class="stat-box"><div class="val">${tree.growth || 0}<span style="font-size:1rem"> cm</span></div><div class="lbl">Current Growth</div></div>
+      <div class="stat-box"><div class="val">${tree.waterEvery}</div><div class="lbl">Water Every (days)</div></div>
+      <div class="stat-box"><div class="val" style="font-size:1.1rem">${daysSince}</div><div class="lbl">Planted</div></div>
+      <div class="stat-box"><div class="val">${(tree.growthLog || []).length}</div><div class="lbl">Growth Logs</div></div>
+    </div>
+
+    <!-- Growth progress -->
+    <div class="card" style="margin-bottom:20px">
+      <div style="display:flex;justify-content:space-between;margin-bottom:8px">
+        <span style="font-weight:700;color:var(--forest)">Growth Progress</span>
+        <span style="font-size:.82rem;color:var(--muted)">${tree.growth || 0} cm of 100 cm milestone</span>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" style="width:${growthPct}%"></div></div>
+      <div style="font-size:.78rem;color:var(--muted);margin-top:6px">${growthPct}% toward first milestone (1 metre)</div>
+    </div>
+
+    <!-- AI Advice -->
+    <div class="alert ${tree.health === 'Healthy' ? 'alert-success' : tree.health === 'Needs Water' ? 'alert-info' : 'alert-warn'}" style="margin-bottom:20px">
+      <span>🤖</span>
+      <div><strong>AI Care Advice:</strong> ${aiAdvice}</div>
+    </div>
+
+    <!-- Details card -->
+    <div class="card" style="margin-bottom:20px">
+      <div style="font-weight:700;color:var(--forest);margin-bottom:14px">Tree Details</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px 24px;font-size:.875rem">
+        <div><span style="color:var(--muted)">Species:</span> <strong>${tree.species}</strong></div>
+        <div><span style="color:var(--muted)">Location:</span> <strong>${tree.location}</strong></div>
+        <div><span style="color:var(--muted)">Soil Type:</span> <strong>${tree.soilType || '—'}</strong></div>
+        <div><span style="color:var(--muted)">Date Planted:</span> <strong>${ST.formatDate(tree.plantedDate)}</strong></div>
+        <div><span style="color:var(--muted)">Health:</span> ${ST.healthBadge(tree.health)}</div>
+        <div><span style="color:var(--muted)">Water Schedule:</span> <strong>Every ${tree.waterEvery} days</strong></div>
+        <div style="grid-column:1/-1"><span style="color:var(--muted)">Notes:</span> <span>${tree.notes || 'No notes added.'}</span></div>
+      </div>
+    </div>
+
+    <!-- Growth Log -->
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+        <div style="font-weight:700;color:var(--forest)">Growth Log</div>
+        <button class="btn btn-primary btn-sm" onclick="openLogModal()">+ Log Update</button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Date</th><th>Height</th><th>Health</th><th>Notes</th></tr></thead>
+          <tbody>${logRows}</tbody>
+        </table>
+      </div>
+    </div>
+  `;
+}
+
+function openLogModal() {
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('log-date').value = today;
+  document.getElementById('log-height').value = tree ? (tree.growth || '') : '';
+  document.getElementById('log-health').value = tree ? (tree.health || 'Healthy') : 'Healthy';
+  document.getElementById('log-notes').value = '';
+  document.getElementById('log-modal').classList.add('open');
+}
+function closeLogModal() {
+  document.getElementById('log-modal').classList.remove('open');
+}
+
+function saveLog() {
+  const height = parseInt(document.getElementById('log-height').value);
+  const health = document.getElementById('log-health').value;
+  const notes  = document.getElementById('log-notes').value.trim();
+  const date   = document.getElementById('log-date').value;
+
+  if (!height || !date) { alert('Please enter the date and height.'); return; }
+
+  const t = ST.getTree(id);
+  if (!t) return;
+  const log = t.growthLog || [];
+  log.push({ date, height, health, notes });
+  ST.updateTree(id, { growth: height, health, growthLog: log });
+  closeLogModal();
+  render();
+}
+
+render();
+</script>
+</body>
+</html>
